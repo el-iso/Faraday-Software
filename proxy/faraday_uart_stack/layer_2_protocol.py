@@ -30,20 +30,34 @@ class layer_2_object(object):
 
 class layer_2_protocol(threading.Thread):
     def __init__(self, com, baud,timeout_time):
-        self.ser = serial.Serial(com, baud, timeout = timeout_time)
-        self.serial_rx_queue = Queue.Queue() # Infinite
-        self.serial_tx_queue = Queue.Queue() # Infinite
-        self.enabled = True
+        try:
+            self.ser = serial.Serial(com, baud, timeout = timeout_time)
 
-        #Start
-        threading.Thread.__init__(self)
-        self.start() #Starts the run() function and thread
+        except serial.SerialException as e:
+            print e # change to logging
+            #self.ser.close()
+            #self.abort()
+
+        else:
+            self.serial_rx_queue = Queue.Queue() # Infinite
+            self.serial_tx_queue = Queue.Queue() # Infinite
+            self.enabled = True
+
+            #Start
+            threading.Thread.__init__(self)
+            self.start() #Starts the run() function and thread
 
 
     def abort(self):
         self.enabled = False
         print "Aborting Layer 2 Class Main"
-        self.ser.close()
+        self.stop()
+
+    def stop(self):
+        self._stop.set()
+
+    def stopped(self):
+        return self._stop.isSet()
 
     def close_connection(self):
         self.ser.close()
@@ -558,54 +572,57 @@ class Receiver_Datalink_Device_State_Parser_Class(threading.Thread):
     def run(self):
         while(self.enable_flag==True):
             time.sleep(0.001)
-            if( not self.serial_physical_obj.serial_physical_obj.serial_rx_queue.empty()):
-                rx_byte_raw = self.serial_physical_obj.serial_physical_obj.get_byte()
-                #Get next byte
-                for i in range(0, len(rx_byte_raw), 1):
-                    rx_byte = rx_byte_raw[i]
-                    #PARSE BYTES
-                    #Check PACKET STARTED Flag = FALSE (Packet NOT already started)
-                    if(self.logic_startbyte_received == False):
-                        #Received byte is start byte - New Packet!
-                        if (rx_byte == self.encapsulate_startbyte):
-                            self.logic_startbyte_received = True
-                            self.partial_packet = '' #Clear partial packet contents for new packet
-                        #Noise or curruption data, skip.
-                        else:
-                            pass
-                    #Check PACKET STARTED Flag = True (Packet already started and being recieved)
-                    elif(self.logic_startbyte_received == True):
-                        #Check if current BYTE is being escaped (framing) - FALSE
-                        if((self.logic_escapebyte_received == False)):
-                            #Non-Escaped DATA BYTE received
-                            if ((rx_byte != self.encapsulate_escapebyte) and (rx_byte != self.encapsulate_startbyte) and (rx_byte != self.encapsulate_stopbyte)):
-                                self.partial_packet += rx_byte
-                            #Escape byte received
-                            elif(rx_byte == self.encapsulate_escapebyte):
-                                self.logic_escapebyte_received = True
-                            #Stop byte received
-                            elif(rx_byte == self.encapsulate_stopbyte):
-                                self.logic_startbyte_received = False
-                                self.rx_packet_queue.put(self.partial_packet)
-                            #Received byte is start byte - Current packet is currupted and found next packet header (potentially)!
-                            elif (rx_byte == self.encapsulate_startbyte):
+            try:
+                if( not self.serial_physical_obj.serial_physical_obj.serial_rx_queue.empty()):
+                    rx_byte_raw = self.serial_physical_obj.serial_physical_obj.get_byte()
+                    #Get next byte
+                    for i in range(0, len(rx_byte_raw), 1):
+                        rx_byte = rx_byte_raw[i]
+                        #PARSE BYTES
+                        #Check PACKET STARTED Flag = FALSE (Packet NOT already started)
+                        if(self.logic_startbyte_received == False):
+                            #Received byte is start byte - New Packet!
+                            if (rx_byte == self.encapsulate_startbyte):
                                 self.logic_startbyte_received = True
                                 self.partial_packet = '' #Clear partial packet contents for new packet
-                            #Unknown State - Error
+                            #Noise or curruption data, skip.
                             else:
-                                print"ERROR:", self.partial_packet
-                        #Check if current BYTE is being escaped (framing) - TRUE
-                        elif((self.logic_escapebyte_received == True)):
-                            #Escaped Packet data received
-                            if ((rx_byte == self.encapsulate_escapebyte) or (rx_byte == self.encapsulate_startbyte) or (rx_byte == self.encapsulate_stopbyte)):
-                                self.logic_escapebyte_received = False
-                                self.partial_packet += rx_byte
-                            #Unknown State - Error
-                            else:
-                                print"ERROR:", self.partial_packet
-                    #Unknown State - Error
-                    else:
-                        print"ERROR:", self.partial_packet
+                                pass
+                        #Check PACKET STARTED Flag = True (Packet already started and being recieved)
+                        elif(self.logic_startbyte_received == True):
+                            #Check if current BYTE is being escaped (framing) - FALSE
+                            if((self.logic_escapebyte_received == False)):
+                                #Non-Escaped DATA BYTE received
+                                if ((rx_byte != self.encapsulate_escapebyte) and (rx_byte != self.encapsulate_startbyte) and (rx_byte != self.encapsulate_stopbyte)):
+                                    self.partial_packet += rx_byte
+                                #Escape byte received
+                                elif(rx_byte == self.encapsulate_escapebyte):
+                                    self.logic_escapebyte_received = True
+                                #Stop byte received
+                                elif(rx_byte == self.encapsulate_stopbyte):
+                                    self.logic_startbyte_received = False
+                                    self.rx_packet_queue.put(self.partial_packet)
+                                #Received byte is start byte - Current packet is currupted and found next packet header (potentially)!
+                                elif (rx_byte == self.encapsulate_startbyte):
+                                    self.logic_startbyte_received = True
+                                    self.partial_packet = '' #Clear partial packet contents for new packet
+                                #Unknown State - Error
+                                else:
+                                    print"ERROR:", self.partial_packet
+                            #Check if current BYTE is being escaped (framing) - TRUE
+                            elif((self.logic_escapebyte_received == True)):
+                                #Escaped Packet data received
+                                if ((rx_byte == self.encapsulate_escapebyte) or (rx_byte == self.encapsulate_startbyte) or (rx_byte == self.encapsulate_stopbyte)):
+                                    self.logic_escapebyte_received = False
+                                    self.partial_packet += rx_byte
+                                #Unknown State - Error
+                                else:
+                                    print"ERROR:", self.partial_packet
+                        #Unknown State - Error
+                        else:
+                            print"ERROR:", self.partial_packet
+            except StandardError as e:
+                pass
             #No new databyte to parse
             else:
                     pass #No new data
