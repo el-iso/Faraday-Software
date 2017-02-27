@@ -1,6 +1,8 @@
 #Imports - General
 
-import os, sys
+import os
+import sys
+import ConfigParser
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../../Faraday_Proxy_Tools")) #Append path to common tutorial FaradayIO module
 
 #Imports - Faraday Specific
@@ -10,9 +12,18 @@ from FaradayIO import telemetryparser
 from FaradayIO import cc430radioconfig
 
 
-#Variables
-local_device_callsign = 'REPLACEME'  # Should match the connected Faraday unit as assigned in Proxy configuration
-local_device_node_id = REPLACEME  # Should match the connected Faraday unit as assigned in Proxy configuration
+# Open configuration INI
+config = ConfigParser.RawConfigParser()
+filename = os.path.abspath("telemetry_parsing.ini")
+config.read(filename)
+
+# Definitions
+
+# Variables
+local_device_callsign = config.get("DEVICES",
+                                   "UNIT0CALL").upper()  # Should match the connected Faraday unit as assigned in Proxy configuration
+local_device_node_id = config.getint("DEVICES",
+                                  "UNIT0ID")  # Should match the connected Faraday unit as assigned in Proxy configuration
 
 #Start the proxy server after configuring the configuration file correctly
 #Setup a Faraday IO object
