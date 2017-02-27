@@ -29,9 +29,79 @@ In this tutorial the three Telemetry packets available from Faraday are queried,
 * Save the file as `telemetry_parsing.ini`
 ## Tutorial Output Examples
 
-below is a screen-shot of the partial output of the tutorial script when run in a python interpreter (PyCharm).
+below is an example of the output of the tutorial script when run in a python interpreter (PyCharm).
 
-![Example Tutorial Operation](Images/Output.png "Example Tutorial Operation")
+```python
+--- Telemetry Packet #1 ---
+Index[0]: RF Freq 2 35
+Index[1]: RF Freq 1 44
+Index[2]: RF Freq 0 78
+Index[3]: RF Power Bitmask 145
+Faraday's Current Frequency: 914.499 MHz
+
+
+18
+--- Telemetry Packet #2 ---
+Index[0]: Boot Count 106
+Index[1]: Reset Count 0
+Index[2]: Brownout reset counter 0
+Index[3]: Reset / Non-maskable Interrupt counter 0
+Index[4]: PMM Supervisor Low counter 0
+Index[5]: PMM Supervisor High counter 0
+Index[6]: PMM Supervisor Low - OVP counter 0
+Index[7]: PMM Supervisor High - OVP counter 0
+Index[8]: Watchdog timeout counter 0
+Index[9]: Flash key violation counter 0
+Index[10]: FLL Unlock counter 0
+Index[11]: Peripheral / Config counter 0
+Index[12]: Access violation counter 0
+Index[13]: Firmware Revision 232278577 232278577
+
+
+--- Telemetry Packet #3 ---
+Source Callsign KB1LQD
+Source Callsign Length 6
+Source Callsign ID 1
+Destination Callsign KB1LQD
+Destination Callsign Length 6
+Destination Callsign ID 1
+RTC Second 19
+RTC Minute 0
+RTC Hour 0
+RTC Day 1
+RTC Day Of Week 4
+RTC Month 1
+Year 45575
+GPS Lattitude 000000000
+GPS Lattitude Direction 0
+GPS Longitude 0000000000
+GPS Longitude Direction 0
+GPS Altitude 00000000
+GPS Altitude Units 0
+GPS Speed 00000
+GPS Fix 0
+GPS HDOP 0000
+GPIO State Telemetry 192
+IO State Telemetry 7
+RF State Telemetry 0
+ADC 0 139
+ADC 1 88
+ADC 2 1194
+ADC 3 106
+ADC 4 88
+ADC 5 85
+VCC 0
+CC430 Temperature 26
+ADC 8 2852
+HAB Automatic Cutdown Timer State Machine State 0
+HAB Cutdown Event State Machine State 0
+HAB Automatic Cutdown Timer Trigger Time 7200
+HAB Automatic Cutdown Timer Current Time 0
+EPOCH 1488187725.92
+Parsed packet dictionary: {'RFSTATE': 0, 'GPIOSTATE': 192, 'VCC': 0, 'RTCMIN': 0, 'SOURCECALLSIGN': 'KB1LQD', 'GPSLONGITUDE': '0000000000', 'SOURCEID': 1, 'RTCYEAR': 45575, 'ADC1': 88, 'BOARDTEMP': 26, 'DESTINATIONID': 1, 'EPOCH': 1488187725.92, 'RTCSEC': 19, 'GPSLATITUDE': '000000000', 'IOSTATE': 7, 'GPSSPEED': '00000', 'RTCDAY': 1, 'RTCMONTH': 1, 'GPSFIX': '0', 'RTCHOUR': 0, 'HABTIMER': 0, 'GPSHDOP': '0000', 'ADC3': 106, 'HABTRIGGERTIME': 7200, 'DESTINATIONCALLSIGNLEN': 6, 'GPSLONGITUDEDIR': '0', 'DESTINATIONCALLSIGN': 'KB1LQD', 'ADC4': 88, 'ADC5': 85, 'SOURCECALLSIGNLEN': '6', 'GPSALTITUDE': '00000000', 'ADC0': 139, 'GPSLATITUDEDIR': '0', 'ADC2': 1194, 'HABTIMERSTATE': 0, 'RTCDOW': 4, 'HABCUTDOWNSTATE': 0, 'ADC8': 2852, 'GPSALTITUDEUNITS': '0'}
+
+Process finished with exit code 0
+```
 
 # Code Overview
 
