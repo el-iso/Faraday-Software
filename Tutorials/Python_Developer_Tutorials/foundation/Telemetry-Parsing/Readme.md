@@ -1,7 +1,7 @@
 
-# Tutorial - Proxy Interaction Basics
+# Tutorial - Local Telemetry Parsing
 
-In this tutorial the three Telemetry packets available from Faraday are queried, parsed, and displayed. This makes use of the telemetry parsing tool module and more detailed information can be found in the telemetry application and packet definition documentation.
+In this tutorial the three Telemetry packets available from Faraday are queried, parsed, and displayed.
 
 ##Telemetry Packet Types
 
@@ -9,19 +9,27 @@ In this tutorial the three Telemetry packets available from Faraday are queried,
   * Current operation details (frequency, power levels, etc...)
 * **Device Debug Information**
   * Non-volatile system failure/reset counters useful for debugging
+  * Firmware Revision
 * **Main Faraday Telemetry**
   * Faraday telemetry that include all peripheral data (i.e GPS, ADC's, etc...) 
 
 #Running The Tutorial Example Script
 
-## Start The Proxy Interface
+### Prerequisites
+* Properly configured and connected proxy
+  * 1x Faraday
 
-Following the [Configuring Proxy](../../0-Welcome_To_Faraday/Configuring_Proxy/) tutorial configure, start, and ensure a successful connection to a locally (USB) connected Faraday digital radio.
+# Running The Tutorial Example Script
 
+## Configuration
 
+* Open `telemetry_parsing.sample.ini` with a text editor
+* Update `REPLACEME` from `CALLSIGN` to match the callsign of the Faraday unit **as assigned** in proxy
+* Update `REPLACEME` from `NODEID` to match the callsign node ID of the Faraday unit **as assigned** in proxy
+* Save the file as `telemetry_parsing.ini`
 ## Tutorial Output Examples
 
-below is a screen-shot of the partial output of the tutorial script when run in a python interpreter (PyCharm). The script 
+below is a screen-shot of the partial output of the tutorial script when run in a python interpreter (PyCharm).
 
 ![Example Tutorial Operation](Images/Output.png "Example Tutorial Operation")
 
@@ -29,11 +37,11 @@ below is a screen-shot of the partial output of the tutorial script when run in 
 
 ## Code - Parse Telemetry Packet Type #1 (System Operation)
 
-The code below first uses `FlushRxPort()` to remove all prior data in the buffer and is imediately followed by `POST()` which the argument including ` faraday_cmd.CommandLocalSendTelemDeviceSystemSettings()` which commands the locally connected Faraday unit to send a Telemetry packet type #1 over UART to the proxy server. This simple example does not check for the packet type prior to parsing and  flushing all prior data to commanding packet type #1 being sent ensures that the next retrieved data from the proxy FIFO is packet type #1.
+The example first implements `FlushRxPort()` to remove all prior data in the buffer for the respective Proxy port and is immediately followed by a `POST()` command to instruct the Faraday device to send the specified telemetry packet over UART. This simple example does not check for the packet type prior to parsing, flushing all prior data to commanding packet type #1 being sent ensures within reason that the next retrieved data from the proxy FIFO is packet type #1.
 
-`faraday_parser.UnpackDatagram()` extracts the telemetry packet from the main encapsulation packet (datagram) and `rx_debug_data_datagram['PayloadData']` contains the telemetry packet type #1 packet to be parsed. The datagram payload is fixed length, `ExtractPaddedPacket(rx_settings_packet, faraday_parser.packet_1_len)` truncates just the packet needed using pre-defined packet lengths from the telemetry parser class module object. `UnpackPacket_1()` then parses the telemetry packet and `debug = True` causes the parser to print the fields directly to the screen and returns a dictionary of the parsed results.
+`faraday_parser.UnpackDatagram()` extracts the telemetry packet from the main encapsulation packet and `rx_debug_data_datagram['PayloadData']` contains the telemetry packet type #1 (System Operation) packet to be parsed. The datagram payload is fixed length, `ExtractPaddedPacket(rx_settings_packet, faraday_parser.packet_1_len)` truncates just the packet needed using pre-defined packet lengths from the telemetry parser class module object. `UnpackPacket_1()` then parses the telemetry packet and `debug = True` causes the parser to print the fields directly to the screen while returning a dictionary of the parsed results.
 
-`freq0_reverse_carrier_calculation()` uses the received system operating information to calculate the frequency of the CC430 radio in MHz.
+`freq0_reverse_carrier_calculation()` calculate the frequency of the CC430 radio in MHz.
 
 
 
@@ -72,7 +80,7 @@ print "Faraday's Current Frequency:", str(faraday_freq_mhz)[0:7], "MHz"
 
 ## Code - Parse Telemetry Packet Type #2 (Device Debug)
 
-The actions needed to flush, command, unpack from the telemetry datagram, and parse telemetry packet type #2 are the same as previously exampled except that parsing routines for packet type #2 are specificaly used.  Notably `CommandLocalSendTelemDeviceDebugFlash()` and `UnpackPacket_2()` command the sending / parsing of telemetry packet type #2 respectively.
+The actions needed to flush, command, unpack from the telemetry datagram, and parse telemetry packet type #2 are the same as previously exampled except that parsing routines for packet type #2 are specifically used.  Notably `CommandLocalSendTelemDeviceDebugFlash()` and `UnpackPacket_2()` command the sending / parsing of telemetry packet type #2 respectively.
 
 ```python
 ############
@@ -105,7 +113,7 @@ rx_debug_data_parsed = faraday_parser.UnpackPacket_2(rx_debug_data_pkt_extracted
 
 ## Code - Parse Telemetry Packet Type #3 (Main Faraday Telemetry)
 
-The actions needed to flush, command, unpack from the telemetry datagram, and parse telemetry packet type #3 are the same as previously exampled except that parsing routines for packet type #2 are specificaly used.  Notably `CommandLocalUARTFaradayTelemetry()` and `UnpackPacket_3()` command the sending / parsing of telemetry packet type #3 respectively.
+The actions needed to flush, command, unpack from the telemetry datagram, and parse telemetry packet type #3 are the same as previously exampled except that parsing routines for packet type #2 are specifically used.  Notably `CommandLocalUARTFaradayTelemetry()` and `UnpackPacket_3()` command the sending / parsing of telemetry packet type #3 respectively.
 
 `rx_telemetry_packet_parsed` is printed after reception and parsing to example the raw parsed dictionary item returned from the parsing function(s).
 
