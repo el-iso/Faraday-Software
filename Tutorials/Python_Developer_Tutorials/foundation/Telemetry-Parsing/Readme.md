@@ -107,7 +107,7 @@ Process finished with exit code 0
 
 Faraday may be configured to automatically send UART telemetry data in specific intervals (telemetry beacon) but each telemetry packet can be queried through a command sent to the unit. The example script provided performs the following steps to retrieve and display a telemetry packet:
 
-* `FlushRxPort()`
+1. `FlushRxPort()`
   * Remove all prior data in the buffer in the respective Proxy port
   * Flushing all prior data to commanding the packet to be sent ensures within reason that the next retrieved data from the proxy FIFO is the intended packet type. This simplifies the tutorial.
 * `POST()` Command to unit
@@ -168,7 +168,7 @@ print "Faraday's Current Frequency:", str(faraday_freq_mhz)[0:7], "MHz"
 
 ## Code - Parse Telemetry Packet Type #2 (Device Debug)
 
-The actions needed to flush, command, unpack from the telemetry datagram, and parse telemetry packet type #2 are the same as previously exampled except that parsing routines for packet type #2 are specifically used.  Notably `CommandLocalSendTelemDeviceDebugFlash()` and `UnpackPacket_2()` command the sending / parsing of telemetry packet type #2 respectively.
+Querying and parsing the Device Debug telemetry packet utilizes the general process above but implements `CommandLocalSendTelemDeviceDebugFlash()` and `UnpackPacket_2()` functions to interact with telemetry packet type #2 respectively.
 
 ```python
 ############
@@ -201,9 +201,7 @@ rx_debug_data_parsed = faraday_parser.UnpackPacket_2(rx_debug_data_pkt_extracted
 
 ## Code - Parse Telemetry Packet Type #3 (Main Faraday Telemetry)
 
-The actions needed to flush, command, unpack from the telemetry datagram, and parse telemetry packet type #3 are the same as previously exampled except that parsing routines for packet type #2 are specifically used.  Notably `CommandLocalUARTFaradayTelemetry()` and `UnpackPacket_3()` command the sending / parsing of telemetry packet type #3 respectively.
-
-`rx_telemetry_packet_parsed` is printed after reception and parsing to example the raw parsed dictionary item returned from the parsing function(s).
+Querying and parsing the Device Debug telemetry packet utilizes the general process above but implements  `CommandLocalUARTFaradayTelemetry()` and `UnpackPacket_3()` functions to interact with telemetry packet type #3 respectively.
 
 ```python
 ############
