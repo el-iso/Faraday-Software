@@ -109,17 +109,27 @@ Faraday may be configured to automatically send UART telemetry data in specific 
 
 * `FlushRxPort()`
   * Remove all prior data in the buffer in the respective Proxy port
+  * Flushing all prior data to commanding the packet to be sent ensures within reason that the next retrieved data from the proxy FIFO is the intended packet type. This simplifies the tutorial.
 * `POST()` Command to unit
   * Command unit to send the specified telemetry packet over UART
-  
+* The data packet(s) are retrieved from Proxy using `GetWait()`
+  * `GetWait()` Allows the program to block until timeout while waiting for an empty FIFO in proxy to be filled with new data
+* The first (only likely only) data packet returned from Proxy is BASE64 decoded
+* The telemetry application frame is parsed using `UnpackDatagram()`
+* All telemetry frames are fixed length, `ExtractPaddedPacket()` is used to extract the expected (smaller) fixed length Systems Settings packet from the received data
+* The telemetry packet is parsed and displayed
 
-## Code - Parse Telemetry Packet Type #1 (System Operation)
 
-The example first implements `FlushRxPort()` to remove all prior data in the buffer for the respective Proxy port and is immediately followed by a `POST()` command to instruct the Faraday device to send the specified telemetry packet over UART. This simple example does not check for the packet type prior to parsing, flushing all prior data to commanding packet type #1 being sent ensures within reason that the next retrieved data from the proxy FIFO is packet type #1.
 
-`faraday_parser.UnpackDatagram()` extracts the telemetry packet from the main encapsulation packet and `rx_debug_data_datagram['PayloadData']` contains the telemetry packet type #1 (System Operation) packet to be parsed. The datagram payload is fixed length, `ExtractPaddedPacket(rx_settings_packet, faraday_parser.packet_1_len)` truncates just the packet needed using pre-defined packet lengths from the telemetry parser class module object. `UnpackPacket_1()` then parses the telemetry packet and `debug = True` causes the parser to print the fields directly to the screen while returning a dictionary of the parsed results.
 
-`freq0_reverse_carrier_calculation()` calculate the frequency of the CC430 radio in MHz.
+## Code - Parse Telemetry Packet Type #1 (System Settings)
+
+The System Settings packet is defined as telemetry packet type #1 and is shown below to be queried, decoded, and displayed.
+
+**Notable Parsing Operations**
+* The Systems Settings packet (Packet Type #1) is parsed using `UnpackPacket_1()`
+  * `debug=True` causes the parsing function to display information about the packet as it is decoded
+* `freq0_reverse_carrier_calculation()` calculate the frequency of the CC430 radio in MHz.
 
 
 
