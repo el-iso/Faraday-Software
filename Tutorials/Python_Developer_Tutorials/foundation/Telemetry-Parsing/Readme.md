@@ -1,7 +1,7 @@
 
 # Tutorial - Local Telemetry Parsing
 
-In this tutorial the three Telemetry packets available from Faraday are queried, parsed, and displayed.
+In this tutorial Telemetry packets from Faraday are queried, parsed, and displayed. Information about current system status, debugging information, and general telemetry are available.
 
 ##Telemetry Packet Types
 
@@ -104,6 +104,14 @@ Process finished with exit code 0
 ```
 
 # Code Overview
+
+Faraday may be configured to automatically send UART telemetry data in specific intervals (telemetry beacon) but each telemetry packet can be queried through a command sent to the unit. The example script provided performs the following steps to retrieve and display a telemetry packet:
+
+* `FlushRxPort()`
+  * Remove all prior data in the buffer in the respective Proxy port
+* `POST()` Command to unit
+  * Command unit to send the specified telemetry packet over UART
+  
 
 ## Code - Parse Telemetry Packet Type #1 (System Operation)
 
